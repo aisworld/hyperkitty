@@ -1,0 +1,58 @@
+{% load i18n %}
+{% load gravatar %}
+{% load hk_generic %}
+
+        <div class="thread">
+            <div>
+                <span class="thread-title">
+                    <a name="{{email.message_id_hash}}"
+                       href="{% url 'hk_message_index' mlist_fqdn=email.mailinglist_id message_id_hash=email.message_id_hash %}"
+                       >{{ email.subject|strip_subject:mlist }}</a></span>
+                <span class="thread-date">{{ email.date|timesince }}</span>
+            </div>
+            <div class="thread-info">
+                <div class="gravatar sender">
+                    {% if email.sender.mailman_id %}
+                    <a href="{% url 'hk_public_user_profile' user_id=email.sender.mailman_id %}"
+                       title="{% blocktrans with name=email.sender.name|escapeemail|escape %}See the profile for {{ name }}{% endblocktrans %}">
+                    {% endif %}
+                    {% if email.sender.address %}
+                    {% gravatar email.sender.address 120 %}
+                    <br />
+                    {% endif %}
+                    {{ email.sender.name|escapeemail }}
+                    {% if email.sender.mailman_id %}
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="thread-content">
+                    <div class="thread-email row">
+                        <span class="expander collapsed col-tn-12">
+                            {{ email.content|urlizetrunc:76|escapeemaillinks }}
+                        </span>
+                    </div>
+                    <div class="thread-extras row">
+                        {% if use_mockups %}
+                        <div class="thread-category col-tn-12 col-xs-6 col-sm-3 col-xl-2">
+                            {% include 'hyperkitty/threads/category.html' with category=email.category_hk category_form=email.category_form thread=email.thread %}
+                        </div>
+                        {% endif %}
+                        <div class="col-tn-12 col-xs-6 col-sm-4 col-xl-3">
+                            {% include "hyperkitty/fragments/like_form.html" with message_id_hash=email.message_id_hash object=email %}
+                        </div>
+                        <div class="tags col-tn-12 col-xl-4">
+                            {% if email.tags.count %}
+                            {% trans "Tags:" %}
+                            <ul class="list-unstyled list-inline">
+                            {% for tag in email.tags.distinct %}
+                                <li>
+                                    <a href="{#% url 'hk_search_tag' mlist_fqdn=email.mailinglist_id tag=tag.tag %#}">{{tag.name}}</a>{% if not forloop.last %},{% endif %}
+                                </li>
+                            {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
